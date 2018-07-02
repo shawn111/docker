@@ -233,6 +233,9 @@ func (d *Daemon) ContainerExecStart(ctx context.Context, name string, stdin io.R
 	attachErr := ec.StreamConfig.CopyStreams(ctx, &attachConfig)
 
 	systemPid, err := d.containerd.AddProcess(ctx, c.ID, name, p, ec.InitializeStdio)
+	// the exec context should be ready, or error happened.
+	// close the chan to notify readiness
+	close(ec.Started)
 	if err != nil {
 		return err
 	}

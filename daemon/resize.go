@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/docker/docker/libcontainerd"
 )
@@ -36,5 +37,14 @@ func (daemon *Daemon) ContainerExecResize(name string, height, width int) error 
 	if err != nil {
 		return err
 	}
-	return daemon.containerd.Resize(ec.ContainerID, ec.ID, width, height)
+	// TODO: the timeout is hardcoded here, it would be more flexible to
+	// make it
+	// a parameter in resize request context, which would need API changes.
+	timeout := 10 * time.Second
+	select {
+	case <-ec.Started:
+		return daemon.containerd.Resize(ec.ContainerID, ec.ID, width, height)
+	case <-time.After(timeout):
+		return fmt.Errorf("timeout waiting for exec session ready")
+	}
 }
