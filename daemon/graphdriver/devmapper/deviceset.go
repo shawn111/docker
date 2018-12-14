@@ -41,6 +41,14 @@ var (
 	defaultThinpBlockSize        uint32 = 128 // 64K = 128 512b sectors
 	defaultUdevSyncOverride             = false
 	maxDeviceID                         = 0xffffff // 24 bit, pool limit
+	// When system-udevd service encounters timeout,
+	// its worker may be killed without making cookies complete.
+	// We can monitor it for a period of time and
+	// stop waiting for cookies when necessary.
+	// It would be better if we can make sure the timeout
+	// really happened in systemd-udevd.
+	// So here we allow it to wait udev cookies for 600s.
+	defaultUdevWaitTimeout              = 600
 	deviceIDMapSz                       = (maxDeviceID + 1) / 8
 	driverDeferredRemovalSupport        = false
 	enableDeferredRemoval               = false
