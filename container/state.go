@@ -3,6 +3,7 @@ package container
 import (
 	"fmt"
 	"sync"
+	"syscall"
 	"time"
 
 	"golang.org/x/net/context"
@@ -228,6 +229,18 @@ func (s *State) IsRunning() bool {
 	res := s.Running
 	s.Unlock()
 	return res
+}
+
+//Check container process is running.
+func (s *State) CheckProcessIsRunning() {
+	if !s.IsRunning() {
+		return
+	}
+	if err := syscall.Kill(s.Pid, syscall.Signal(0)); err == nil {
+		return
+	}
+	// TODO: force set exitcode:1, better to define new exitcode
+	s.SetStopped(&ExitStatus{ExitCode: 1})
 }
 
 // GetPID holds the process id of a container.
